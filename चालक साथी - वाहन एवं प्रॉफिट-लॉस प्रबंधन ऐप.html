@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>चालक साथी - वाहन, पगार एवं प्रॉफिट/लॉस ट्रैकर</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Hind -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Hind', sans-serif;
+            background-color: #0f172a;
+            touch-action: manipulation;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex justify-center items-center p-0 md:p-4 text-gray-800 select-none">
+
+    <!-- Mobile Frame Container -->
+    <div class="w-full max-w-md bg-slate-50 min-h-screen md:min-h-[850px] md:max-h-[920px] md:rounded-[36px] shadow-2xl flex flex-col relative overflow-hidden border-0 md:border-[10px] border-gray-900">
+
+        <!-- Status Bar -->
+        <div class="bg-blue-900 text-white px-5 pt-2 pb-1 flex justify-between items-center text-xs font-semibold">
+            <span><i class="fas fa-clock mr-1"></i>09:41 AM</span>
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-three-quarters text-green-400"></i>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-800 to-indigo-800 text-white px-4 py-3 flex justify-between items-center shadow-lg z-20 sticky top-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-800 shadow-md">
+                    <i class="fas fa-steering-wheel text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide leading-none">चालक साथी</h1>
+                    <span class="text-[11px] text-blue-200">वाहन, ड्राइवर एवं प्रॉफिट/लॉस प्रबंधक</span>
+                </div>
+            </div>
+            <button onclick="switchTab('settings')" class="p-2 hover:bg-white/10 rounded-full transition" title="सेटिंग्स">
+                <i class="fas fa-cog text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Month Switcher Strip -->
+        <div class="bg-blue-100 border-b border-blue-200 px-4 py-2 flex justify-between items-center text-xs font-bold text-blue-900">
+            <button onclick="changeMonth(-1)" class="hover:bg-blue-200 p-1.5 rounded-lg text-blue-800"><i class="fas fa-chevron-left"></i></button>
+            <div class="flex items-center space-x-2">
+                <i class="far fa-calendar-check text-blue-700 text-sm"></i>
+                <span id="currentMonthText">इस महीने का हिसाब (अक्टूबर 2026)</span>
+            </div>
+            <button onclick="changeMonth(1)" class="hover:bg-blue-200 p-1.5 rounded-lg text-blue-800"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <!-- Scrollable Main Container -->
+        <main id="mainContainer" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+
+            <!-- ================= TAB 1: DASHBOARD ================= -->
+            <div id="tab-dashboard" class="space-y-4">
+                
+                <!-- 🌟 TOP PROMINENT PROFIT / LOSS BANNER (सबसे ऊपर प्रॉफिट/लॉस की जानकारी) -->
+                <div id="topProfitLossBanner" class="rounded-2xl p-4 shadow-lg text-white transition-all border-2">
+                    <div class="flex justify-between items-center border-b border-white/20 pb-2 mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div id="topStatusBadgeIcon" class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-base">
+                                <i id="statusIcon" class="fas fa-arrow-trend-up"></i>
+                            </div>
+                            <span id="topStatusTitle" class="text-xs font-bold uppercase tracking-wider">वर्तमान स्थिति: प्रॉफिट में है</span>
+                        </div>
+                        <span id="percentageBadge" class="bg-white/20 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-inner">
+                            ↑ 21.61%
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between items-end my-1">
+                        <div>
+                            <div id="topNetLabel" class="text-xs font-medium text-white/80">सब जोड़ने-घटाने के बाद (Net Profit):</div>
+                            <div id="topNetAmount" class="text-3xl font-black tracking-tight drop-shadow">₹ 14,800</div>
+                        </div>
+                        <div class="text-right">
+                            <span id="statusTagText" class="inline-block bg-white text-emerald-800 font-extrabold text-xs px-3 py-1 rounded-lg shadow">
+                                लाभ (PROFIT)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Sub Breakdown Strip inside banner -->
+                    <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-white/20 text-xs">
+                        <div class="bg-black/20 p-2 rounded-xl flex justify-between items-center">
+                            <span class="text-white/80 text-[11px]">कुल कमाई:</span>
+                            <span id="bannerEarnings" class="font-extrabold">₹ 68,500</span>
+                        </div>
+                        <div class="bg-black/20 p-2 rounded-xl flex justify-between items-center">
+                            <span class="text-white/80 text-[11px]">कुल खर्च:</span>
+                            <span id="bannerExpenses" class="font-extrabold">₹ 53,700</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Earnings Card -->
+                <div class="bg-white border border-emerald-200 rounded-2xl p-3.5 shadow-sm flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500 uppercase">कुल कमाई (Total Earnings)</div>
+                            <div id="totalEarningsDisplay" class="text-2xl font-extrabold text-emerald-700">₹ 68,500</div>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('income')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow">
+                        + जोड़ें
+                    </button>
+                </div>
+
+                <!-- Driver Salary Card -->
+                <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-amber-900">ड्राइवर की पगार (Driver Salary)</div>
+                            <div id="driverSalaryDisplay" class="text-2xl font-extrabold text-amber-800">₹ 16,000</div>
+                            <div class="text-[10px] font-semibold text-amber-700" id="driverStatusText">रामेश कुमार (मासिक तय: ₹16,000)</div>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('driver')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow">
+                        विवरण
+                    </button>
+                </div>
+
+                <!-- Expense Breakdown Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Maintenance -->
+                    <div class="bg-white border border-orange-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gray-800 leading-tight">गाड़ी मेंटेनेंस</div>
+                                <div class="text-[9px] text-gray-500">Maintenance</div>
+                            </div>
+                        </div>
+                        <div id="maintenanceCostDisplay" class="text-lg font-extrabold text-orange-600 mt-2">₹ 6,200</div>
+                    </div>
+
+                    <!-- Petrol Expense -->
+                    <div class="bg-white border border-blue-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                                <i class="fas fa-gas-pump"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gray-800 leading-tight">पेट्रोल खर्च</div>
+                                <div class="text-[9px] text-gray-500">Petrol Expense</div>
+                            </div>
+                        </div>
+                        <div id="petrolCostDisplay" class="text-lg font-extrabold text-blue-600 mt-2">₹ 18,400</div>
+                    </div>
+
+                    <!-- CNG Expense -->
+                    <div class="bg-white border border-teal-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600">
+                                <i class="fas fa-fire-flame-simple"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gray-800 leading-tight">सीएनजी खर्च</div>
+                                <div class="text-[9px] text-gray-500">CNG Expense</div>
+                            </div>
+                        </div>
+                        <div id="cngCostDisplay" class="text-lg font-extrabold text-teal-600 mt-2">₹ 12,100</div>
+                    </div>
+
+                    <!-- Toll & Parking -->
+                    <div class="bg-white border border-purple-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                                <i class="fas fa-road text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gray-800 leading-tight">टॉल व पार्किंग</div>
+                                <div class="text-[9px] text-gray-500">Toll & Parking</div>
+                            </div>
+                        </div>
+                        <div id="tollParkingCostDisplay" class="text-lg font-extrabold text-purple-600 mt-2">₹ 1,000</div>
+                    </div>
+                </div>
+
+                <!-- Total Expense Strip -->
+                <div class="bg-gray-900 text-white rounded-2xl px-4 py-3 flex justify-between items-center shadow-md">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calculator text-red-400"></i>
+                        <span class="font-bold text-xs">कुल संपूर्ण खर्च (Total Expense)</span>
+                    </div>
+                    <span id="totalExpenseDisplay" class="text-xl font-extrabold text-red-400">₹ 53,700</span>
+                </div>
+
+                <!-- Trips History Table -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                    <div class="flex justify-between items-center border-b pb-2 mb-2">
+                        <h3 class="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+                            <i class="fas fa-list-check text-blue-600"></i> हाल ही की ट्रिप व कमाई
+                        </h3>
+                        <button onclick="switchTab('income')" class="text-[11px] bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-lg font-bold shadow">
+                            + नया भाड़ा
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-gray-100 text-gray-600 border-b">
+                                <tr>
+                                    <th class="p-1.5">दिनांक</th>
+                                    <th class="p-1.5">किमी</th>
+                                    <th class="p-1.5">ग्राहक/रूट</th>
+                                    <th class="p-1.5 text-right">किराया</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tripTableBody" class="divide-y text-gray-700">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= TAB 2: DRIVER MANAGEMENT ================= -->
+            <div id="tab-driver" class="hidden space-y-4">
+                <div class="bg-amber-600 text-white rounded-2xl p-4 shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-xs font-semibold text-amber-100">चालक का नाम</div>
+                            <div class="text-2xl font-bold" id="driverProfileName">रामेश कुमार</div>
+                            <div class="text-xs text-amber-100 mt-1"><i class="fas fa-phone mr-1"></i>+91 98765 43210</div>
+                        </div>
+                        <div class="bg-white/20 p-2 rounded-xl text-center">
+                            <div class="text-[10px] text-amber-100">मासिक तय पगार</div>
+                            <div class="text-lg font-bold" id="fixedSalaryDisplay">₹ 16,000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border rounded-2xl p-4 shadow-sm space-y-3">
+                    <h3 class="font-bold text-gray-800 text-xs border-b pb-2 flex items-center gap-2">
+                        <i class="fas fa-money-check-dollar text-amber-600"></i> पगार भुगतान की स्थिति
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-green-50 border border-green-200 p-2.5 rounded-xl">
+                            <div class="text-[11px] text-green-800 font-semibold">दिया गया पगार/एडवांस</div>
+                            <div id="driverPaidDisplay" class="text-lg font-extrabold text-green-700">₹ 16,000</div>
+                        </div>
+                        <div class="bg-red-50 border border-red-200 p-2.5 rounded-xl">
+                            <div class="text-[11px] text-red-800 font-semibold">शेष पगार बाकी</div>
+                            <div id="driverDueDisplay" class="text-lg font-extrabold text-red-600">₹ 0</div>
+                        </div>
+                    </div>
+
+                    <button onclick="quickAddDriverSalary()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl shadow flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-plus-circle"></i> ड्राइवर को पगार या एडवांस दें
+                    </button>
+                </div>
+
+                <div class="bg-white border rounded-2xl p-3 shadow-sm">
+                    <h3 class="font-bold text-gray-800 text-xs border-b pb-2 mb-2 flex items-center gap-2">
+                        <i class="fas fa-history text-amber-600"></i> पगार भुगतान इतिहास
+                    </h3>
+                    <div id="driverSalaryHistoryList" class="space-y-2 text-xs">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 3: ADD EXPENSE ================= -->
+            <div id="tab-expense" class="hidden space-y-4">
+                <div class="bg-white border rounded-2xl p-4 shadow-sm">
+                    <h2 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2 flex items-center gap-2">
+                        <i class="fas fa-minus-circle text-red-500"></i> नया खर्च दर्ज करें
+                    </h2>
+                    <form id="expenseForm" onsubmit="handleExpenseSubmit(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">खर्च की श्रेणी (Expense Category)</label>
+                            <select id="expenseCategory" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                                <option value="driver">👨‍✈️ ड्राइवर की पगार / एडवांस (Driver Salary)</option>
+                                <option value="petrol">⛽ पेट्रोल खर्च (Petrol Expense)</option>
+                                <option value="cng">🔥 सीएनजी खर्च (CNG Expense)</option>
+                                <option value="maintenance">🔧 गाड़ी मेंटेनेंस (Vehicle Maintenance)</option>
+                                <option value="toll">🛣️ टॉल टैक्स (Toll Charge)</option>
+                                <option value="parking">🅿️ पार्किंग (Parking)</option>
+                                <option value="other">📦 अन्य खर्च (Other Expense)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">राशि (Amount - ₹)</label>
+                            <input type="number" id="expenseAmount" placeholder="जैसे: 1500" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required min="1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">दिनांक (Date)</label>
+                            <input type="date" id="expenseDate" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">विवरण / विवरण नोट (Note)</label>
+                            <input type="text" id="expenseNote" placeholder="जैसे: सीएनजी फुल कराया या ऑयल बदला" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow transition text-xs">
+                            खर्च दर्ज करें
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= TAB 4: ADD EARNINGS ================= -->
+            <div id="tab-income" class="hidden space-y-4">
+                <div class="bg-white border rounded-2xl p-4 shadow-sm">
+                    <h2 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-green-600"></i> नई ट्रिप / कमाई जोड़ें
+                    </h2>
+                    <form id="incomeForm" onsubmit="handleIncomeSubmit(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">ग्राहक का नाम / रूट विवरण</label>
+                            <input type="text" id="tripCustomer" placeholder="उदाहरण: कासतमार या लोकल भाड़ा" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">कुल किराया (Fare ₹)</label>
+                                <input type="number" id="tripFare" placeholder="₹ 3500" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required min="1">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">दूरी (किमी)</label>
+                                <input type="number" step="0.01" id="tripDistance" placeholder="4.50" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">दिनांक (Date)</label>
+                            <input type="date" id="tripDate" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow transition text-xs">
+                            कमाई दर्ज करें
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= TAB 5: SETTINGS ================= -->
+            <div id="tab-settings" class="hidden space-y-4">
+                <div class="bg-white border rounded-2xl p-4 shadow-sm space-y-3">
+                    <h2 class="text-sm font-bold text-gray-800 border-b pb-2">ड्राइवर व वाहन सेटिंग्स</h2>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-700">गाड़ी का नंबर</label>
+                        <input type="text" id="settingVehicleNo" value="MH 12 AB 1234" class="w-full border rounded-xl p-2 text-xs bg-gray-50">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-700">ड्राइवर का नाम</label>
+                        <input type="text" id="settingDriverName" value="रामेश कुमार" class="w-full border rounded-xl p-2 text-xs bg-gray-50">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-700">ड्राइवर की तय मासिक पगार (₹)</label>
+                        <input type="number" id="settingDriverSalary" value="16000" class="w-full border rounded-xl p-2 text-xs bg-gray-50">
+                    </div>
+                    <button onclick="saveSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                        सेटिंग्स सेव करें
+                    </button>
+                </div>
+
+                <div class="bg-white border rounded-2xl p-4 shadow-sm">
+                    <button onclick="resetData()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold py-2.5 rounded-xl text-xs transition">
+                        <i class="fas fa-rotate-right mr-1"></i> सारा डेटा डिफॉल्ट रीसेट करें
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav class="bg-white border-t border-gray-200 absolute bottom-0 left-0 right-0 py-2 px-1 flex justify-around items-center z-30 shadow-2xl">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-blue-700 font-bold text-[10px]">
+                <i class="fas fa-chart-pie text-base mb-0.5"></i>
+                <span>डैशबोर्ड</span>
+            </button>
+            <button onclick="switchTab('driver')" id="nav-driver" class="flex flex-col items-center text-gray-500 hover:text-blue-600 text-[10px]">
+                <i class="fas fa-id-card text-base mb-0.5"></i>
+                <span>ड्राइवर पगार</span>
+            </button>
+            <button onclick="switchTab('expense')" id="nav-expense" class="flex flex-col items-center text-gray-500 hover:text-blue-600 text-[10px]">
+                <i class="fas fa-minus-circle text-base mb-0.5"></i>
+                <span>खर्च जोड़ें</span>
+            </button>
+            <button onclick="switchTab('income')" id="nav-income" class="flex flex-col items-center text-gray-500 hover:text-blue-600 text-[10px]">
+                <i class="fas fa-plus-circle text-base mb-0.5"></i>
+                <span>कमाई जोड़ें</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center text-gray-500 hover:text-blue-600 text-[10px]">
+                <i class="fas fa-cog text-base mb-0.5"></i>
+                <span>सेटिंग्स</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        const initialData = {
+            driverInfo: {
+                name: 'रामेश कुमार',
+                monthlySalary: 16000,
+                phone: '+91 98765 43210'
+            },
+            earnings: 68500,
+            expenses: {
+                maintenance: 6200,
+                petrol: 18400,
+                cng: 12100,
+                driver: 16000,
+                toll: 1000,
+                parking: 0,
+                other: 0
+            },
+            driverSalaryPayments: [
+                { date: '01/10/2026', amount: 8000, note: 'हाफ सैलरी एडवांस' },
+                { date: '15/10/2026', amount: 8000, note: 'फाइनल पगार क्लीयरेंस' }
+            ],
+            trips: [
+                { date: '09/10/2026', dist: '3.86', name: 'कासतमार', fare: 5600 },
+                { date: '12/10/2026', dist: '5.25', name: 'कासतमार', fare: 2400 },
+                { date: '15/10/2026', dist: '5.30', name: 'कासतमार', fare: 5400 },
+                { date: '18/10/2026', dist: '5.50', name: 'पारकिंग', fare: 2900 },
+                { date: '20/10/2026', dist: '4.40', name: 'कासतमार', fare: 3000 },
+                { date: '21/10/2026', dist: '4.00', name: 'समहर', fare: 2000 }
+            ]
+        };
+
+        let appData = JSON.parse(localStorage.getItem('chalakSathiData_v3')) || initialData;
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            if(document.getElementById('expenseDate')) document.getElementById('expenseDate').value = today;
+            if(document.getElementById('tripDate')) document.getElementById('tripDate').value = today;
+
+            updateUI();
+        };
+
+        function updateUI() {
+            const exp = appData.expenses;
+            const driverSalaryTotal = exp.driver || 0;
+            const totalExp = exp.maintenance + exp.petrol + exp.cng + driverSalaryTotal + exp.toll + exp.parking + exp.other;
+            const netAmount = appData.earnings - totalExp;
+
+            // Percentage Calculation
+            let percentVal = 0;
+            if (appData.earnings > 0) {
+                percentVal = (Math.abs(netAmount) / appData.earnings) * 100;
+            } else if (totalExp > 0) {
+                percentVal = 100;
+            }
+
+            // Top Banner Elements Update
+            const topBanner = document.getElementById('topProfitLossBanner');
+            const topStatusTitle = document.getElementById('topStatusTitle');
+            const statusIcon = document.getElementById('statusIcon');
+            const percentageBadge = document.getElementById('percentageBadge');
+            const topNetLabel = document.getElementById('topNetLabel');
+            const topNetAmount = document.getElementById('topNetAmount');
+            const statusTagText = document.getElementById('statusTagText');
+
+            document.getElementById('bannerEarnings').innerText = `₹ ${appData.earnings.toLocaleString('en-IN')}`;
+            document.getElementById('bannerExpenses').innerText = `₹ ${totalExp.toLocaleString('en-IN')}`;
+
+            if (netAmount > 0) {
+                // Profit Styling
+                topBanner.className = "rounded-2xl p-4 shadow-lg text-white transition-all bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 border-emerald-400";
+                topStatusTitle.innerText = "वर्तमान स्थिति: प्रॉफिट (बचत) में है";
+                statusIcon.className = "fas fa-arrow-trend-up text-green-200";
+                percentageBadge.innerText = `↑ ${percentVal.toFixed(2)}% मार्जिन`;
+                topNetLabel.innerText = "सब जोड़ने-घटाने के बाद (Net Profit):";
+                topNetAmount.innerText = `₹ ${netAmount.toLocaleString('en-IN')}`;
+                statusTagText.innerText = "लाभ (PROFIT)";
+                statusTagText.className = "inline-block bg-white text-emerald-800 font-extrabold text-xs px-3 py-1 rounded-lg shadow";
+            } else if (netAmount < 0) {
+                // Loss Styling
+                topBanner.className = "rounded-2xl p-4 shadow-lg text-white transition-all bg-gradient-to-br from-red-600 via-rose-600 to-red-800 border-red-400";
+                topStatusTitle.innerText = "वर्तमान स्थिति: घाटे (Loss) में है";
+                statusIcon.className = "fas fa-arrow-trend-down text-red-200";
+                percentageBadge.innerText = `↓ ${percentVal.toFixed(2)}% घाटा`;
+                topNetLabel.innerText = "सब जोड़ने-घटाने के बाद (Net Loss):";
+                topNetAmount.innerText = `₹ ${Math.abs(netAmount).toLocaleString('en-IN')}`;
+                statusTagText.innerText = "घाटा (LOSS)";
+                statusTagText.className = "inline-block bg-white text-red-800 font-extrabold text-xs px-3 py-1 rounded-lg shadow";
+            } else {
+                // Neutral Break-Even
+                topBanner.className = "rounded-2xl p-4 shadow-lg text-white transition-all bg-gradient-to-br from-slate-700 to-slate-800 border-slate-500";
+                topStatusTitle.innerText = "वर्तमान स्थिति: न लाभ न हानि (Break-Even)";
+                statusIcon.className = "fas fa-equals text-slate-300";
+                percentageBadge.innerText = `0.00%`;
+                topNetLabel.innerText = "सब जोड़ने-घटाने के बाद:";
+                topNetAmount.innerText = `₹ 0`;
+                statusTagText.innerText = "बराबर (NO PROFIT/LOSS)";
+                statusTagText.className = "inline-block bg-white text-slate-800 font-extrabold text-xs px-3 py-1 rounded-lg shadow";
+            }
+
+            // Dashboard Itemized Display
+            document.getElementById('totalEarningsDisplay').innerText = `₹ ${appData.earnings.toLocaleString('en-IN')}`;
+            document.getElementById('driverSalaryDisplay').innerText = `₹ ${driverSalaryTotal.toLocaleString('en-IN')}`;
+            document.getElementById('maintenanceCostDisplay').innerText = `₹ ${exp.maintenance.toLocaleString('en-IN')}`;
+            document.getElementById('petrolCostDisplay').innerText = `₹ ${exp.petrol.toLocaleString('en-IN')}`;
+            document.getElementById('cngCostDisplay').innerText = `₹ ${exp.cng.toLocaleString('en-IN')}`;
+            document.getElementById('tollParkingCostDisplay').innerText = `₹ ${(exp.toll + exp.parking).toLocaleString('en-IN')}`;
+            document.getElementById('totalExpenseDisplay').innerText = `₹ ${totalExp.toLocaleString('en-IN')}`;
+
+            // Driver Status Info
+            const fixedSalary = appData.driverInfo.monthlySalary || 16000;
+            document.getElementById('driverProfileName').innerText = appData.driverInfo.name;
+            document.getElementById('fixedSalaryDisplay').innerText = `₹ ${fixedSalary.toLocaleString('en-IN')}`;
+            document.getElementById('driverPaidDisplay').innerText = `₹ ${driverSalaryTotal.toLocaleString('en-IN')}`;
+            
+            const dueSalary = Math.max(0, fixedSalary - driverSalaryTotal);
+            document.getElementById('driverDueDisplay').innerText = `₹ ${dueSalary.toLocaleString('en-IN')}`;
+            document.getElementById('driverStatusText').innerText = `${appData.driverInfo.name} (मासिक तय: ₹${fixedSalary.toLocaleString('en-IN')})`;
+
+            // Populate Trips Table
+            const tbody = document.getElementById('tripTableBody');
+            tbody.innerHTML = '';
+            appData.trips.forEach(trip => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 transition";
+                tr.innerHTML = `
+                    <td class="p-1.5">${trip.date}</td>
+                    <td class="p-1.5">${trip.dist}</td>
+                    <td class="p-1.5 font-semibold text-gray-800">${trip.name}</td>
+                    <td class="p-1.5 text-right font-bold text-emerald-700">₹${Number(trip.fare).toLocaleString('en-IN')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Populate Driver Salary History
+            const salaryHistoryList = document.getElementById('driverSalaryHistoryList');
+            salaryHistoryList.innerHTML = '';
+            if (appData.driverSalaryPayments && appData.driverSalaryPayments.length > 0) {
+                appData.driverSalaryPayments.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center p-2 bg-amber-50 rounded-xl border border-amber-200";
+                    div.innerHTML = `
+                        <div>
+                            <div class="font-bold text-gray-800">${item.note || 'पगार का भुगतान'}</div>
+                            <div class="text-[10px] text-gray-500">${item.date}</div>
+                        </div>
+                        <div class="text-sm font-extrabold text-amber-800">₹ ${Number(item.amount).toLocaleString('en-IN')}</div>
+                    `;
+                    salaryHistoryList.appendChild(div);
+                });
+            } else {
+                salaryHistoryList.innerHTML = `<div class="text-gray-400 text-center py-2 text-xs">कोई रिकॉर्ड नहीं</div>`;
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem('chalakSathiData_v3', JSON.stringify(appData));
+        }
+
+        // Switch Navigation Tabs
+        function switchTab(tabName) {
+            const tabs = ['dashboard', 'driver', 'expense', 'income', 'settings'];
+            tabs.forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                const navEl = document.getElementById(`nav-${t}`);
+                if (t === tabName) {
+                    tabEl.classList.remove('hidden');
+                    if(navEl) {
+                        navEl.classList.add('text-blue-700', 'font-bold');
+                        navEl.classList.remove('text-gray-500');
+                    }
+                } else {
+                    tabEl.classList.add('hidden');
+                    if(navEl) {
+                        navEl.classList.remove('text-blue-700', 'font-bold');
+                        navEl.classList.add('text-gray-500');
+                    }
+                }
+            });
+            document.getElementById('mainContainer').scrollTop = 0;
+        }
+
+        // Expense Form Submission
+        function handleExpenseSubmit(e) {
+            e.preventDefault();
+            const cat = document.getElementById('expenseCategory').value;
+            const amt = Number(document.getElementById('expenseAmount').value);
+            const note = document.getElementById('expenseNote').value || 'खर्च दर्ज किया';
+            const rawDate = document.getElementById('expenseDate').value;
+
+            const dateObj = new Date(rawDate);
+            const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+            if(amt > 0) {
+                if (cat === 'driver') {
+                    appData.expenses.driver = (appData.expenses.driver || 0) + amt;
+                    if(!appData.driverSalaryPayments) appData.driverSalaryPayments = [];
+                    appData.driverSalaryPayments.unshift({
+                        date: formattedDate,
+                        amount: amt,
+                        note: note
+                    });
+                } else if(appData.expenses[cat] !== undefined) {
+                    appData.expenses[cat] += amt;
+                } else {
+                    appData.expenses.other += amt;
+                }
+
+                updateUI();
+                alert('खर्च सफलता से जोड़ा गया!');
+                document.getElementById('expenseForm').reset();
+                switchTab('dashboard');
+            }
+        }
+
+        // Income Form Submission
+        function handleIncomeSubmit(e) {
+            e.preventDefault();
+            const customer = document.getElementById('tripCustomer').value;
+            const fare = Number(document.getElementById('tripFare').value);
+            const dist = document.getElementById('tripDistance').value;
+            const rawDate = document.getElementById('tripDate').value;
+
+            const dateObj = new Date(rawDate);
+            const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+            if(fare > 0) {
+                appData.earnings += fare;
+                appData.trips.unshift({
+                    date: formattedDate,
+                    dist: dist || '0.0',
+                    name: customer,
+                    fare: fare
+                });
+                updateUI();
+                alert('कमाई दर्ज की गई!');
+                document.getElementById('incomeForm').reset();
+                switchTab('dashboard');
+            }
+        }
+
+        function quickAddDriverSalary() {
+            switchTab('expense');
+            document.getElementById('expenseCategory').value = 'driver';
+        }
+
+        function saveSettings() {
+            appData.driverInfo.name = document.getElementById('settingDriverName').value;
+            appData.driverInfo.monthlySalary = Number(document.getElementById('settingDriverSalary').value);
+            updateUI();
+            alert('सेटिंग्स सेव हो गईं!');
+            switchTab('dashboard');
+        }
+
+        function resetData() {
+            if(confirm('क्या आप डेटा रीसेट करना चाहते हैं?')) {
+                appData = JSON.parse(JSON.stringify(initialData));
+                updateUI();
+                alert('डेटा रीसेट हो गया!');
+                switchTab('dashboard');
+            }
+        }
+
+        const months = ['अक्टूबर 2026', 'नवंबर 2026', 'दिसंबर 2026'];
+        let currentMonthIdx = 0;
+        function changeMonth(dir) {
+            currentMonthIdx = (currentMonthIdx + dir + months.length) % months.length;
+            document.getElementById('currentMonthText').innerText = `इस महीने का हिसाब (${months[currentMonthIdx]})`;
+        }
+    </script>
+</body>
+</html>
